@@ -1,53 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>{{ title }}</title>
-  <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="/static/styles.css"/>
 </head>
 <body>
-  <main>
-    <h1>{{ title }}</h1>
-    <p class="sub">{{ description }} · LLM <span class="pill">{{ llm_mode }}</span></p>
-    <div class="grid">
-      <section class="card">
-        <h2>Create note</h2>
-        <form method="post" action="/ui/create">
-        <label>meeting</label><input name="meeting" placeholder="meeting" required />
-<label>body</label><input name="body" placeholder="body" required />
-<label>topics</label><input name="topics" placeholder="topics" required />
-          <button type="submit">Save</button>
-        </form>
-        <h2 style="margin-top:1.25rem">AI action: {{ action }}</h2>
-        <p class="sub">{{ action_desc }}</p>
-        <form method="post" action="/ui/action">
-          <label>prompt</label>
-          <textarea name="prompt" rows="4" placeholder="Describe what you need..."></textarea>
-          <button type="submit">Run {{ action }}</button>
-        </form>
-        {% if last_result %}
-        <h3>Last result</h3>
-        <pre>{{ last_result }}</pre>
-        {% endif %}
-      </section>
-      <section class="card">
-        <h2>{{ resource }} ({{ items|length }})</h2>
-        <table>
-          <thead><tr><th>id</th><th>data</th></tr></thead>
-          <tbody>
-          {% for item in items %}
-            <tr>
-              <td>{{ item.id }}</td>
-              <td><code>{{ item }}</code></td>
-            </tr>
-          {% else %}
-            <tr><td colspan="2">No items yet</td></tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      </section>
-    </div>
-  </main>
+<main>
+  <h1>{{ title }}</h1>
+  <p class="sub">Index standups &amp; syncs, filter by topic, ask with citations.</p>
+  <div class="grid">
+    <section class="card">
+      <h2>Ingest notes</h2>
+      <form method="post" action="/ui/notes">
+        <label>Title</label><input name="title" required/>
+        <label>Topic</label><input name="topic" value="standup"/>
+        <label>Attendees</label><input name="attendees" placeholder="ada, linus"/>
+        <label>Date</label><input name="meeting_date" placeholder="2026-10-13"/>
+        <label>Body</label><textarea name="body" rows="8" required></textarea>
+        <button type="submit">Index</button>
+      </form>
+    </section>
+    <section class="card">
+      <h2>Ask</h2>
+      <form method="post" action="/ui/ask">
+        <label>Topic filter</label><input name="topic" value="{{ topic }}"/>
+        <label>Question</label>
+        <textarea name="question" rows="4" required>{{ question or '' }}</textarea>
+        <button type="submit">Search notes</button>
+      </form>
+      {% if answer %}
+        <h3>Answer</h3><pre>{{ answer }}</pre>
+        {% for c in citations %}
+          <article class="card" style="margin:.5rem 0">
+            <span class="pill">{{ c.topic }}</span>
+            <span class="pill">{{ c.score }}</span>
+            <strong>{{ c.title }}</strong>
+            <div class="sub">{{ c.snippet }}</div>
+          </article>
+        {% endfor %}
+      {% endif %}
+      <h3>Notes</h3>
+      <ul>
+      {% for n in notes %}
+        <li><span class="pill">{{ n.topic }}</span> {{ n.title }}
+          <span class="sub">{{ n.meeting_date }} · {{ n.attendees }}</span></li>
+      {% else %}
+        <li class="sub">No notes yet.</li>
+      {% endfor %}
+      </ul>
+    </section>
+  </div>
+</main>
 </body>
 </html>

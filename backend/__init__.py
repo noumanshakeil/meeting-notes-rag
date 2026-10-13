@@ -1,1 +1,2 @@
-"""Backend package."""
+"""Meeting Notes RAG application package."""
+__version__ = "2.0.0"
